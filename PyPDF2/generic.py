@@ -544,7 +544,7 @@ class DictionaryObject(dict, PdfObject):
             tok = readNonWhitespace(stream)
             stream.seek(-1, 1)
             value = readObject(stream, pdf)
-            if data.has_key(key):
+            if data.has_key(key) and pdf.strict:
                 # multiple definitions of key not permitted
                 raise utils.PdfReadError, ("Multiple definitions in dictionary at byte %s for key %s" \
                                            % (utils.hexStr(stream.tell()), key))
@@ -589,10 +589,21 @@ class DictionaryObject(dict, PdfObject):
                     # we found it by looking back one character further.
                     data["__streamdata__"] = data["__streamdata__"][:-1]
                 else:
-                   # if debug: print "E", e, ndstream, debugging.toHex(end)
-                    stream.seek(pos, 0)
-                    raise utils.PdfReadError, \
-                        ("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
+                    # still not found, try looking forward one character
+                    stream.seek(pos + 1, 0)
+                    end = stream.read(9)
+                    if end == b_("endstream"):
+                        # we found it by looking forward one character, add
+                        # skipped character to the end of the stream data
+                        stream.seek(-10, 1)
+                        data["__streamdata__"] = data["__streamdata__"] + stream.read(1)
+                        stream.seek(9, 1)
+                    else:
+                        # give up looking for misplaced "endstream" token
+                        # if debug: print "E", e, ndstream, debugging.toHex(end)
+                        stream.seek(pos, 0)
+                        raise utils.PdfReadError, \
+                            ("Unable to find 'endstream' marker after stream at byte %s." % utils.hexStr(stream.tell()))
         else:
             stream.seek(pos, 0)
         if data.has_key("__streamdata__"):

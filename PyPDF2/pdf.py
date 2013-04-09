@@ -538,7 +538,7 @@ class PdfFileWriter(object):
 #               similar to a file object.
 # @param strict Determines whether user should be warned of all problems and
 #               also causes some correctable problems to be fatal. Defaults
-#               to False. 
+#               to True.
 # @param warndest Allows redirection of warnings to any open file/stream. Defauls to
 #                 the warnings default (sys.stderr)
 class PdfFileReader(object):
