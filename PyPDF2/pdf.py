@@ -557,7 +557,7 @@ class PdfFileReader(object):
         self.flattenedPages = None
         self.resolvedObjects = {}
         self.xrefIndex = 0
-        if hasattr(stream, 'mode') and 'b' not in stream.mode:
+        if hasattr(stream, 'mode') and stream.mode and 'b' not in stream.mode:
             warnings.warn("PdfFileReader stream/file object is not in binary mode. It may not be read correctly.", utils.PdfReadWarning)
         if type(stream) in (str, unicode):
             fileobj = open(stream,'rb')
